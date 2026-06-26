@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useStore } from '@/store/useStore';
 import { useFiltered } from '@/hooks/useFiltered';
-import { budgetVsActual, monthKeyOf } from '@/lib/analytics';
+import { BUDGETABLE_TYPES, budgetVsActual, monthKeyOf } from '@/lib/analytics';
 import { formatAbs, formatCurrency, formatMonthKey, formatPercent } from '@/lib/format';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -35,14 +35,14 @@ export function Budget() {
   const currentKey = format(new Date(), 'yyyy-MM');
   const [monthKey, setMonthKey] = useState(months.includes(currentKey) ? currentKey : months[0] ?? currentKey);
 
-  const expenseCats = useMemo(() => categories.filter((c) => c.type === 'expense'), [categories]);
+  const budgetCats = useMemo(() => categories.filter((c) => BUDGETABLE_TYPES.has(c.type)), [categories]);
   const budgetRows = useMemo(() => budgetVsActual(transactions, categories, monthKey), [transactions, categories, monthKey]);
 
   // Per-category actuals for the selected month (covers categories without a budget too).
   const actualByCat = useMemo(() => {
     const map = new Map<string, number>();
     for (const t of transactions) {
-      if (t.type === 'expense' && monthKeyOf(t.date) === monthKey) {
+      if (BUDGETABLE_TYPES.has(t.type) && monthKeyOf(t.date) === monthKey) {
         map.set(t.categoryId, (map.get(t.categoryId) ?? 0) + Math.abs(t.amount));
       }
     }
@@ -50,10 +50,10 @@ export function Budget() {
   }, [transactions, monthKey]);
 
   const totals = useMemo(() => {
-    const budget = expenseCats.reduce((s, c) => s + (c.monthlyBudget ?? 0), 0);
+    const budget = budgetCats.reduce((s, c) => s + (c.monthlyBudget ?? 0), 0);
     const spent = [...actualByCat.values()].reduce((s, v) => s + v, 0);
     return { budget, spent, remaining: budget - spent };
-  }, [expenseCats, actualByCat]);
+  }, [budgetCats, actualByCat]);
 
   const allocation = useMemo(() => {
     const monthTxns = transactions.filter((t) => monthKeyOf(t.date) === monthKey);
@@ -108,7 +108,7 @@ export function Budget() {
         {/* Editable category budgets */}
         <SectionCard title="Category Budgets" className="lg:col-span-2">
           <div className="flex flex-col gap-4">
-            {expenseCats.map((c) => {
+            {budgetCats.map((c) => {
               const actual = actualByCat.get(c.id) ?? 0;
               const budget = c.monthlyBudget ?? 0;
               const pct = budget > 0 ? actual / budget : 0;

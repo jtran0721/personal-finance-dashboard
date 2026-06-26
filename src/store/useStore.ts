@@ -159,7 +159,13 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'fintrack-store',
-      version: 1,
+      version: 3,
+      // Bumping the version re-applies the seed categories (latest budget plan)
+      // onto existing saved data, so budgets refresh while transactions are kept.
+      migrate: (persisted) => {
+        const prev = (persisted ?? {}) as Record<string, unknown>;
+        return { ...prev, categories: DEFAULT_CATEGORIES } as unknown as StoreState;
+      },
       partialize: (s) => ({
         transactions: s.transactions,
         categories: s.categories,

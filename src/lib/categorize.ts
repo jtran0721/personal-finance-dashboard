@@ -42,7 +42,8 @@ const RULES: Rule[] = [
   { match: /uber\b|lyft|shell|chevron|exxon|\bbp\b|gas station|fuel|parking|metro|transit|\bmta\b|bart|toll|caltrain|76 gas|arco/, categoryId: 'transport', type: 'expense', confidence: 0.85 },
 
   // ── Housing ───────────────────────────────────────────────
-  { match: /\brent\b|landlord|mortgage|\bhoa\b|property mgmt|apartment|leasing/, categoryId: 'housing', type: 'expense', confidence: 0.9 },
+  { match: /mortgage/, categoryId: 'mortgage', type: 'expense', confidence: 0.9 },
+  { match: /\brent\b|landlord|\bhoa\b|property mgmt|apartment|leasing/, categoryId: 'housing', type: 'expense', confidence: 0.9 },
 
   // ── Utilities ─────────────────────────────────────────────
   { match: /electric|pg&?e|comcast|xfinity|verizon|at&?t|t-?mobile|water dept|utility|internet|sewer|spectrum|con edison|national grid/, categoryId: 'utilities', type: 'expense', confidence: 0.85 },
