@@ -26,6 +26,8 @@ Built with **React 18 + TypeScript + Vite**, Tailwind CSS, Recharts, Zustand and
 - **Seeded sample data** on first run so every chart is alive immediately — clear it anytime from the
   top-right menu.
 
+![overview.png](/screenshots/overview.png)
+
 ## Getting started
 
 ```bash
@@ -35,14 +37,14 @@ npm run dev          # http://localhost:5173
 
 ### Scripts
 
-| Script | Purpose |
-|---|---|
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Type-check and build for production (`dist/`) |
-| `npm run preview` | Preview the production build |
-| `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint (zero warnings allowed) |
-| `npm test` | End-to-end import smoke test: builds a PDF, extracts with pdf.js, runs the parser |
+| Script              | Purpose                                                                           |
+| ------------------- | --------------------------------------------------------------------------------- |
+| `npm run dev`       | Start the Vite dev server                                                         |
+| `npm run build`     | Type-check and build for production (`dist/`)                                     |
+| `npm run preview`   | Preview the production build                                                      |
+| `npm run typecheck` | `tsc --noEmit`                                                                    |
+| `npm run lint`      | ESLint (zero warnings allowed)                                                    |
+| `npm test`          | End-to-end import smoke test: builds a PDF, extracts with pdf.js, runs the parser |
 
 ## Importing bank statements (read this)
 
