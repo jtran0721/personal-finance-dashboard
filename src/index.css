@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-[#f4f3fb] text-ink antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    background-image: theme('backgroundImage.aurora');
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    @apply bg-[#0f0b1d] text-slate-100;
+  }
+
+  /* Slim, themed scrollbars */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-brand-300/60 dark:bg-brand-500/40;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::selection {
+    @apply bg-brand-500/30;
+  }
+}
+
+@layer components {
+  /* Surface card — the building block of the whole UI */
+  .card {
+    @apply rounded-2xl border border-black/5 bg-white/90 p-5 shadow-soft backdrop-blur-sm
+      dark:border-white/10 dark:bg-white/[0.04];
+  }
+
+  .card-tight {
+    @apply rounded-2xl border border-black/5 bg-white/90 p-4 shadow-soft backdrop-blur-sm
+      dark:border-white/10 dark:bg-white/[0.04];
+  }
+
+  /* Pill chip used for categories & statuses */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-brand-gradient text-white shadow-glow-sm hover:brightness-110 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply btn bg-black/5 text-ink hover:bg-black/10 dark:bg-white/5 dark:text-slate-100 dark:hover:bg-white/10;
+  }
+  .btn-outline {
+    @apply btn border border-black/10 bg-transparent text-ink hover:bg-black/5
+      dark:border-white/15 dark:text-slate-100 dark:hover:bg-white/5;
+  }
+
+  /* Form controls */
+  .input {
+    @apply w-full rounded-xl border border-black/10 bg-white px-3 py-2 text-sm text-ink shadow-sm
+      outline-none transition focus:border-brand-400 focus:ring-2 focus:ring-brand-400/40
+      dark:border-white/10 dark:bg-white/5 dark:text-slate-100 dark:placeholder:text-slate-400;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+  }
+
+  /* Muted helper text */
+  .muted {
+    @apply text-slate-500 dark:text-slate-400;
+  }
+
+  /* Loading shimmer */
+  .skeleton {
+    @apply relative overflow-hidden rounded-xl bg-black/5 dark:bg-white/5;
+  }
+  .skeleton::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/40 to-transparent content-[''] dark:via-white/10;
+  }
+}
+
+/* Recharts: let our theme show through */
+.recharts-default-tooltip {
+  @apply !rounded-xl !border-none !bg-transparent;
+}
+.recharts-cartesian-axis-tick-value {
+  @apply fill-slate-400 text-xs;
+}
+.recharts-surface:focus {
+  outline: none;
+}
