@@ -105,7 +105,7 @@ export function generateSampleTransactions(): Transaction[] {
 
     // ── Investing & saving ──
     if (within(16)) txns.push(makeTxn(rng, dayIn(16), 'Vanguard Brokerage Transfer', -between(rng, 450, 600), 'investment', 'brokerage', CHECKING));
-    if (within(16)) txns.push(makeTxn(rng, dayIn(16), 'Fidelity 401k Contribution', -400, 'investment', 'retirement', CHECKING));
+    if (within(16)) txns.push(makeTxn(rng, dayIn(16), 'Fidelity Brokerage Contribution', -400, 'investment', 'brokerage', CHECKING));
     if (rng() < 0.4 && within(20)) txns.push(makeTxn(rng, dayIn(times(rng, 10, 24)), 'Coinbase Purchase', -between(rng, 50, 250), 'investment', 'crypto', CHECKING));
     if (within(2)) txns.push(makeTxn(rng, dayIn(2), 'Transfer to Ally Savings', -between(rng, 500, 700), 'transfer', 'savings', CHECKING));
   }

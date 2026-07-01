@@ -22,7 +22,7 @@ const RULES: Rule[] = [
 
   // ── Investments ───────────────────────────────────────────
   { match: /vanguard|fidelity|schwab|robinhood|e\*?trade|wealthfront|betterment|brokerage|td ameritrade|m1 finance/, categoryId: 'brokerage', type: 'investment', confidence: 0.9 },
-  { match: /401\(?k\)?|403\(?b\)?|\bira\b|retirement|pension/, categoryId: 'retirement', type: 'investment', confidence: 0.9 },
+  { match: /401\(?k\)?|403\(?b\)?|\bira\b|retirement|pension/, categoryId: 'brokerage', type: 'investment', confidence: 0.9 },
   { match: /coinbase|binance|kraken|crypto|bitcoin|ethereum|gemini exchange/, categoryId: 'crypto', type: 'investment', confidence: 0.88 },
 
   // ── Transfers / Savings ───────────────────────────────────

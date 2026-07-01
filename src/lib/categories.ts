@@ -32,7 +32,6 @@ export const DEFAULT_CATEGORIES: Category[] = [
 
   // ── Investments ───────────────────────────────────────────
   { id: 'brokerage', name: 'Brokerage (ETF)', type: 'investment', color: '#7c3aed', icon: 'line-chart', monthlyBudget: 3000 },
-  { id: 'retirement', name: 'Retirement (401k/IRA)', type: 'investment', color: '#22b8cf', icon: 'landmark' },
   { id: 'crypto', name: 'Crypto', type: 'investment', color: '#ff922b', icon: 'bitcoin' },
 
   // ── Transfers (neutral) ───────────────────────────────────
