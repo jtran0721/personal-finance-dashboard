@@ -159,7 +159,18 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'fintrack-store',
-      version: 1,
+      version: 4,
+      // Bumping the version re-applies the seed categories (latest budget plan) onto
+      // existing saved data, and re-points transactions in removed categories
+      // (retirement → brokerage) so none are left orphaned.
+      migrate: (persisted) => {
+        const prev = (persisted ?? {}) as Record<string, unknown>;
+        const txns = Array.isArray(prev.transactions) ? (prev.transactions as Transaction[]) : [];
+        const transactions = txns.map((t) =>
+          t.categoryId === 'retirement' ? { ...t, categoryId: 'brokerage' } : t,
+        );
+        return { ...prev, categories: DEFAULT_CATEGORIES, transactions } as unknown as StoreState;
+      },
       partialize: (s) => ({
         transactions: s.transactions,
         categories: s.categories,

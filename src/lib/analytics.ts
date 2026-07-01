@@ -139,18 +139,22 @@ export interface BudgetRow {
   over: boolean;
 }
 
+/** Category types that can carry a monthly budget (expenses + investment contributions). */
+export const BUDGETABLE_TYPES = new Set<Category['type']>(['expense', 'investment']);
+
 /**
- * Budget vs. actual spend for a single month. Only expense categories that have
- * a `monthlyBudget` set are included. `actual` is that month's spend.
+ * Budget vs. actual for a single month. Includes expense and investment
+ * categories that have a `monthlyBudget` set. `actual` is that month's spend
+ * (or contribution, for investments).
  */
 export function budgetVsActual(txns: Transaction[], categories: Category[], monthKey: string): BudgetRow[] {
-  const monthTxns = txns.filter((t) => t.type === 'expense' && monthKeyOf(t.date) === monthKey);
+  const monthTxns = txns.filter((t) => BUDGETABLE_TYPES.has(t.type) && monthKeyOf(t.date) === monthKey);
   const spendByCat = new Map<string, number>();
   for (const t of monthTxns) {
     spendByCat.set(t.categoryId, (spendByCat.get(t.categoryId) ?? 0) + Math.abs(t.amount));
   }
   return categories
-    .filter((c) => c.type === 'expense' && c.monthlyBudget && c.monthlyBudget > 0)
+    .filter((c) => BUDGETABLE_TYPES.has(c.type) && c.monthlyBudget && c.monthlyBudget > 0)
     .map((c) => {
       const budget = c.monthlyBudget ?? 0;
       const actual = spendByCat.get(c.id) ?? 0;

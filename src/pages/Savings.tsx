@@ -118,7 +118,7 @@ export function Savings() {
 
         <SectionCard title="Holdings" className="lg:col-span-2">
           {invest.length === 0 ? (
-            <p className="muted py-6 text-center text-sm">Record contributions to brokerage, retirement or crypto to see them here.</p>
+            <p className="muted py-6 text-center text-sm">Record contributions to brokerage or crypto to see them here.</p>
           ) : (
             <ul className="flex flex-col gap-3">
               {invest.map((h) => (

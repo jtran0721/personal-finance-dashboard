@@ -22,7 +22,7 @@ const RULES: Rule[] = [
 
   // ── Investments ───────────────────────────────────────────
   { match: /vanguard|fidelity|schwab|robinhood|e\*?trade|wealthfront|betterment|brokerage|td ameritrade|m1 finance/, categoryId: 'brokerage', type: 'investment', confidence: 0.9 },
-  { match: /401\(?k\)?|403\(?b\)?|\bira\b|retirement|pension/, categoryId: 'retirement', type: 'investment', confidence: 0.9 },
+  { match: /401\(?k\)?|403\(?b\)?|\bira\b|retirement|pension/, categoryId: 'brokerage', type: 'investment', confidence: 0.9 },
   { match: /coinbase|binance|kraken|crypto|bitcoin|ethereum|gemini exchange/, categoryId: 'crypto', type: 'investment', confidence: 0.88 },
 
   // ── Transfers / Savings ───────────────────────────────────
@@ -42,7 +42,8 @@ const RULES: Rule[] = [
   { match: /uber\b|lyft|shell|chevron|exxon|\bbp\b|gas station|fuel|parking|metro|transit|\bmta\b|bart|toll|caltrain|76 gas|arco/, categoryId: 'transport', type: 'expense', confidence: 0.85 },
 
   // ── Housing ───────────────────────────────────────────────
-  { match: /\brent\b|landlord|mortgage|\bhoa\b|property mgmt|apartment|leasing/, categoryId: 'housing', type: 'expense', confidence: 0.9 },
+  { match: /mortgage/, categoryId: 'mortgage', type: 'expense', confidence: 0.9 },
+  { match: /\brent\b|landlord|\bhoa\b|property mgmt|apartment|leasing/, categoryId: 'housing', type: 'expense', confidence: 0.9 },
 
   // ── Utilities ─────────────────────────────────────────────
   { match: /electric|pg&?e|comcast|xfinity|verizon|at&?t|t-?mobile|water dept|utility|internet|sewer|spectrum|con edison|national grid/, categoryId: 'utilities', type: 'expense', confidence: 0.85 },
