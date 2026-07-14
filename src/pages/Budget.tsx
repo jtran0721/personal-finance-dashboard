@@ -1,4 +1,4 @@
-import { AlertTriangle, Target, Wallet } from 'lucide-react';
+import { AlertTriangle, Settings2, Target, Wallet } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { format } from 'date-fns';
 import { useStore } from '@/store/useStore';
@@ -7,6 +7,7 @@ import { BUDGETABLE_TYPES, budgetVsActual, monthKeyOf } from '@/lib/analytics';
 import { formatAbs, formatCurrency, formatMonthKey, formatPercent } from '@/lib/format';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { CategoryManager } from '@/components/budget/CategoryManager';
 
 /** Expense categories considered "needs" for the 50/30/20 rule. */
 const NEEDS = new Set(['groceries', 'housing', 'utilities', 'transport', 'health', 'fees']);
@@ -26,6 +27,7 @@ function SectionCard({ title, action, children, className }: { title: string; ac
 export function Budget() {
   const transactions = useStore((s) => s.transactions);
   const setBudget = useStore((s) => s.setBudget);
+  const renameCategory = useStore((s) => s.renameCategory);
   const { categories } = useFiltered();
 
   const months = useMemo(() => {
@@ -34,6 +36,7 @@ export function Budget() {
   }, [transactions]);
   const currentKey = format(new Date(), 'yyyy-MM');
   const [monthKey, setMonthKey] = useState(months.includes(currentKey) ? currentKey : months[0] ?? currentKey);
+  const [managerOpen, setManagerOpen] = useState(false);
 
   const budgetCats = useMemo(() => categories.filter((c) => BUDGETABLE_TYPES.has(c.type)), [categories]);
   const budgetRows = useMemo(() => budgetVsActual(transactions, categories, monthKey), [transactions, categories, monthKey]);
@@ -106,7 +109,15 @@ export function Budget() {
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* Editable category budgets */}
-        <SectionCard title="Category Budgets" className="lg:col-span-2">
+        <SectionCard
+          title="Category Budgets"
+          className="lg:col-span-2"
+          action={
+            <button onClick={() => setManagerOpen(true)} className="btn-ghost !py-1.5 !text-xs">
+              <Settings2 size={14} /> Manage categories
+            </button>
+          }
+        >
           <div className="flex flex-col gap-4">
             {budgetCats.map((c) => {
               const actual = actualByCat.get(c.id) ?? 0;
@@ -115,11 +126,17 @@ export function Budget() {
               const over = budget > 0 && actual > budget;
               return (
                 <div key={c.id} className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                  <div className="flex w-44 shrink-0 items-center gap-2">
-                    <span className="grid h-7 w-7 place-items-center rounded-lg" style={{ backgroundColor: `${c.color}22`, color: c.color }}>
+                  <div className="flex w-48 shrink-0 items-center gap-2">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg" style={{ backgroundColor: `${c.color}22`, color: c.color }}>
                       <CategoryIcon icon={c.icon} size={14} />
                     </span>
-                    <span className="text-sm font-semibold">{c.name}</span>
+                    <input
+                      className="min-w-0 flex-1 rounded-md bg-transparent px-1.5 py-1 text-sm font-semibold outline-none transition hover:bg-black/5 focus:bg-black/5 focus:ring-1 focus:ring-brand-400 dark:hover:bg-white/10 dark:focus:bg-white/10"
+                      value={c.name}
+                      onChange={(e) => renameCategory(c.id, e.target.value)}
+                      aria-label={`Rename ${c.name}`}
+                      spellCheck={false}
+                    />
                   </div>
 
                   <div className="flex-1">
@@ -185,6 +202,8 @@ export function Budget() {
           )}
         </SectionCard>
       </div>
+
+      <CategoryManager open={managerOpen} onClose={() => setManagerOpen(false)} />
     </div>
   );
 }
