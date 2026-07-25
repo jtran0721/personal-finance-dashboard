@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { format, startOfMonth, startOfYear, subMonths } from 'date-fns';
 import type { Category, DateRange, DateRangePreset, ThemeMode, Transaction, TxType } from '@/types';
-import { DEFAULT_CATEGORIES } from '@/lib/categories';
+import { DEFAULT_CATEGORIES, FALLBACK_CATEGORY } from '@/lib/categories';
 import { generateSampleTransactions } from '@/lib/sampleData';
 
 const isoOf = (d: Date) => format(d, 'yyyy-MM-dd');
@@ -56,6 +56,10 @@ interface StoreState {
 
   // ── Categories / budget ──
   setBudget: (categoryId: string, monthlyBudget: number) => void;
+  renameCategory: (categoryId: string, name: string) => void;
+  addCategory: (input: Omit<Category, 'id'>) => void;
+  /** Delete a category, re-homing its transactions to the type's fallback. */
+  deleteCategory: (categoryId: string) => void;
 
   // ── UI ──
   setTheme: (theme: ThemeMode) => void;
@@ -135,6 +139,32 @@ export const useStore = create<StoreState>()(
             c.id === categoryId ? { ...c, monthlyBudget: monthlyBudget > 0 ? monthlyBudget : undefined } : c,
           ),
         })),
+
+      renameCategory: (categoryId, name) =>
+        set((s) => ({
+          categories: s.categories.map((c) => (c.id === categoryId ? { ...c, name } : c)),
+        })),
+
+      addCategory: (input) =>
+        set((s) => ({
+          categories: [
+            ...s.categories,
+            { ...input, id: `cat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}` },
+          ],
+        })),
+
+      deleteCategory: (categoryId) => {
+        const cat = get().categories.find((c) => c.id === categoryId);
+        if (!cat) return;
+        const fallback = FALLBACK_CATEGORY[cat.type];
+        if (categoryId === fallback) return; // fallback categories can't be deleted
+        set((s) => ({
+          categories: s.categories.filter((c) => c.id !== categoryId),
+          transactions: s.transactions.map((t) =>
+            t.categoryId === categoryId ? { ...t, categoryId: fallback } : t,
+          ),
+        }));
+      },
 
       setTheme: (theme) => set({ theme }),
       toggleTheme: () => set((s) => ({ theme: s.theme === 'dark' ? 'light' : 'dark' })),
