@@ -1,0 +1,21 @@
+# Dependencies & build output — reinstalled / rebuilt inside the image
+node_modules
+dist
+
+# VCS & CI
+.git
+.gitignore
+.github
+
+# Editor / OS cruft
+.vscode
+.idea
+.DS_Store
+*.log
+
+# Docker & meta (not needed to build the app)
+Dockerfile
+docker-compose.yml
+.dockerignore
+tasks
+*.md

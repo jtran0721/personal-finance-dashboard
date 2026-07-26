@@ -46,6 +46,36 @@ npm run dev          # http://localhost:5173
 | `npm run lint`      | ESLint (zero warnings allowed)                                                    |
 | `npm test`          | End-to-end import smoke test: builds a PDF, extracts with pdf.js, runs the parser |
 
+## Self-hosting with Docker
+
+The app is fully static, so it ships as a tiny nginx image (~64 MB) that builds
+itself — you don't need Node installed on the host.
+
+**Docker Compose (recommended):**
+
+```bash
+docker compose up -d --build     # → http://localhost:8080
+```
+
+Change the host port by editing the `8080:80` mapping in `docker-compose.yml`;
+stop with `docker compose down`.
+
+**Plain Docker:**
+
+```bash
+docker build -t fintrack .
+docker run -d -p 8080:80 --restart unless-stopped --name fintrack fintrack
+```
+
+The image is a multi-stage build (Node compiles the site, nginx serves it). nginx
+is configured for client-side-routing fallback (deep links like `/budget` work on
+refresh) and serves pdf.js's `.mjs` worker with a valid JS MIME type. The
+container is **stateless** — all data still lives in each browser's `localStorage`,
+nothing is stored server-side.
+
+> Hosting under a sub-path (e.g. `/fintrack/`) rather than the server root? Set
+> `base: '/fintrack/'` in `vite.config.ts` and rebuild.
+
 ## Importing bank statements (read this)
 
 PDF statements vary enormously between banks, so import is **heuristic + human-in-the-loop**:
