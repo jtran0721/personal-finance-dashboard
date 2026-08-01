@@ -6,6 +6,7 @@ import { useToast } from '@/components/ui/Toast';
 import { Modal } from '@/components/ui/Modal';
 import { ReviewTable } from './ReviewTable';
 import { importPdf } from '@/lib/pdfImport';
+import { TYPE_LABEL } from '@/lib/categories';
 import { format } from 'date-fns';
 import type { ParsedRow, Transaction, TxType } from '@/types';
 
@@ -231,7 +232,7 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
             <label className="label">Category</label>
             <select className="input cursor-pointer" value={manual.categoryId} onChange={(e) => setManual((m) => ({ ...m, categoryId: e.target.value }))}>
               {categories.map((c) => (
-                <option key={c.id} value={c.id}>{c.name} ({c.type})</option>
+                <option key={c.id} value={c.id}>{c.name} ({TYPE_LABEL[c.type]})</option>
               ))}
             </select>
           </div>

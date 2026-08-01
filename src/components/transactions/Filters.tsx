@@ -15,7 +15,7 @@ const TYPES: { value: TxFilter['type']; label: string }[] = [
   { value: 'income', label: 'Income' },
   { value: 'expense', label: 'Expenses' },
   { value: 'investment', label: 'Investments' },
-  { value: 'transfer', label: 'Transfers' },
+  { value: 'transfer', label: 'Savings' },
 ];
 
 export function Filters({ value, onChange, categories, accounts, resultCount }: Props) {
