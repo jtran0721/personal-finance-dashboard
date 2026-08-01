@@ -59,6 +59,11 @@ export function investmentAllocation(txns: Transaction[], byId: Record<string, C
   return aggregateByCategory(txns.filter((t) => t.type === 'investment'), byId);
 }
 
+/** Aggregate savings (transfers into savings buckets) by category. */
+export function savingsAllocation(txns: Transaction[], byId: Record<string, Category>): CategorySlice[] {
+  return aggregateByCategory(txns.filter((t) => t.type === 'transfer'), byId);
+}
+
 function aggregateByCategory(txns: Transaction[], byId: Record<string, Category>): CategorySlice[] {
   const sums = new Map<string, { amount: number; count: number }>();
   let total = 0;
