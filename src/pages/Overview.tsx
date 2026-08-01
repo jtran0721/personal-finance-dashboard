@@ -7,10 +7,11 @@ import { useImport } from '@/hooks/useImport';
 import {
   budgetVsActual,
   computeTotals,
+  monthKeyOf,
   monthlyTrend,
   spendingByCategory,
 } from '@/lib/analytics';
-import { formatAbs, formatCurrency, formatDate, formatPercent } from '@/lib/format';
+import { formatAbs, formatCurrency, formatDate, formatMonthKey, formatPercent } from '@/lib/format';
 import { KpiCard } from '@/components/dashboard/KpiCard';
 import { CategoryLegend } from '@/components/dashboard/CategoryLegend';
 import { BudgetProgress } from '@/components/dashboard/BudgetProgress';
@@ -39,7 +40,13 @@ export function Overview() {
   const totals = computeTotals(filtered);
   const monthly = monthlyTrend(filtered);
   const spending = spendingByCategory(filtered, byId);
-  const budgetRows = budgetVsActual(transactions, categories, format(new Date(), 'yyyy-MM'));
+  // Budget preview: use the current month if it has activity, otherwise the most
+  // recent month that does — so a freshly imported statement is always reflected.
+  const currentMonthKey = format(new Date(), 'yyyy-MM');
+  const txMonths = [...new Set(transactions.map((t) => monthKeyOf(t.date)))].sort((a, b) => (a < b ? 1 : -1));
+  const budgetMonthKey = txMonths.includes(currentMonthKey) || txMonths.length === 0 ? currentMonthKey : txMonths[0];
+  const budgetRows = budgetVsActual(transactions, categories, budgetMonthKey);
+  const budgetTitle = budgetMonthKey === currentMonthKey ? "This Month's Budget" : `Budget · ${formatMonthKey(budgetMonthKey)}`;
   const recent = [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 7);
 
   if (transactions.length === 0) {
@@ -135,7 +142,7 @@ export function Overview() {
           </ul>
         </SectionCard>
 
-        <SectionCard title="This Month's Budget" action={<Link to="/budget" className="muted inline-flex items-center gap-1 text-xs font-semibold hover:text-brand-500">Manage <ArrowRight size={13} /></Link>}>
+        <SectionCard title={budgetTitle} action={<Link to="/budget" className="muted inline-flex items-center gap-1 text-xs font-semibold hover:text-brand-500">Manage <ArrowRight size={13} /></Link>}>
           <BudgetProgress rows={budgetRows} limit={5} />
         </SectionCard>
       </div>
