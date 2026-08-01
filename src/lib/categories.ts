@@ -1,4 +1,4 @@
-import type { Category } from '@/types';
+import type { Category, TxType } from '@/types';
 
 /**
  * Default category set. Colors are bold and high-contrast (used everywhere the
@@ -52,4 +52,13 @@ export const FALLBACK_CATEGORY: Record<string, string> = {
   expense: 'uncategorized',
   investment: 'brokerage',
   transfer: 'transfer',
+};
+
+/** User-facing display label per transaction type. The neutral `transfer` type
+ *  (money moved between your own accounts) is shown as "Saving". */
+export const TYPE_LABEL: Record<TxType, string> = {
+  income: 'Income',
+  expense: 'Expense',
+  investment: 'Investment',
+  transfer: 'Saving',
 };

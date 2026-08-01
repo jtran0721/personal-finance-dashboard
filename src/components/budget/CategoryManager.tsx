@@ -2,7 +2,7 @@ import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import type { Category, TxType } from '@/types';
 import { useStore } from '@/store/useStore';
-import { FALLBACK_CATEGORY } from '@/lib/categories';
+import { FALLBACK_CATEGORY, TYPE_LABEL } from '@/lib/categories';
 import { Modal } from '@/components/ui/Modal';
 import { CategoryIcon } from '@/components/ui/CategoryIcon';
 import { useToast } from '@/components/ui/Toast';
@@ -18,10 +18,10 @@ const ICON_CHOICES = [
   'more-horizontal', 'help-circle',
 ];
 const TYPES: { value: TxType; label: string }[] = [
-  { value: 'expense', label: 'Expense' },
-  { value: 'income', label: 'Income' },
-  { value: 'investment', label: 'Investment' },
-  { value: 'transfer', label: 'Transfer' },
+  { value: 'expense', label: TYPE_LABEL.expense },
+  { value: 'income', label: TYPE_LABEL.income },
+  { value: 'investment', label: TYPE_LABEL.investment },
+  { value: 'transfer', label: TYPE_LABEL.transfer },
 ];
 const TYPE_ORDER: TxType[] = ['income', 'expense', 'investment', 'transfer'];
 const PROTECTED = new Set(Object.values(FALLBACK_CATEGORY));
@@ -139,7 +139,7 @@ export function CategoryManager({ open, onClose }: { open: boolean; onClose: () 
       <div className="mt-5 max-h-[38vh] space-y-4 overflow-y-auto pr-1">
         {grouped.map((g) => (
           <div key={g.type}>
-            <p className="label">{g.type}</p>
+            <p className="label">{TYPE_LABEL[g.type]}</p>
             <div className="flex flex-col gap-1">
               {g.items.map((c) => (
                 <div key={c.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-black/[0.03] dark:hover:bg-white/[0.03]">
