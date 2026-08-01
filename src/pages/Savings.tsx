@@ -12,7 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { useFiltered } from '@/hooks/useFiltered';
-import { computeTotals, investmentAllocation, monthlyTrend, savingsSeries } from '@/lib/analytics';
+import { computeTotals, investmentAllocation, monthlyTrend, savingsAllocation, savingsSeries } from '@/lib/analytics';
 import { formatCompact, formatCurrency, formatPercent } from '@/lib/format';
 import { KpiCard } from '@/components/dashboard/KpiCard';
 import { CategoryDonut } from '@/components/charts/CategoryDonut';
@@ -45,9 +45,11 @@ export function Savings() {
   const monthly = useMemo(() => monthlyTrend(filtered), [filtered]);
   const series = useMemo(() => savingsSeries(monthly), [monthly]);
   const invest = useMemo(() => investmentAllocation(filtered, byId), [filtered, byId]);
+  const savings = useMemo(() => savingsAllocation(filtered, byId), [filtered, byId]);
   const totals = computeTotals(filtered);
   const avgRate = series.length ? series.reduce((s, m) => s + m.rate, 0) / series.length : 0;
   const totalInvested = invest.reduce((s, c) => s + c.amount, 0);
+  const totalSaved = savings.reduce((s, c) => s + c.amount, 0);
 
   if (filtered.length === 0) {
     return <EmptyState icon={PiggyBank} title="Nothing to show yet" description="Once you have transactions in this period, your savings and investment trends appear here." />;
@@ -94,6 +96,52 @@ export function Savings() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </SectionCard>
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <SectionCard title="Savings Breakdown">
+          {savings.length === 0 ? (
+            <p className="muted py-6 text-center text-sm">No savings set aside in this period.</p>
+          ) : (
+            <div className="mx-auto h-48 max-w-[220px]">
+              <CategoryDonut
+                data={savings}
+                center={
+                  <>
+                    <span className="muted text-xs font-semibold uppercase">Saved</span>
+                    <span className="font-display text-xl font-extrabold">{formatCurrency(totalSaved, { compact: true })}</span>
+                  </>
+                }
+              />
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard title="Savings Buckets" className="lg:col-span-2">
+          {savings.length === 0 ? (
+            <p className="muted py-6 text-center text-sm">Categorize transfers as Travel Savings, Investment Property Fund, Big Purchase Buffer, etc. to track each bucket here.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {savings.map((h) => (
+                <li key={h.categoryId} className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ backgroundColor: `${h.color}22`, color: h.color }}>
+                    <CategoryIcon icon={byId[h.categoryId]?.icon ?? 'piggy-bank'} size={18} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between gap-2 text-sm">
+                      <span className="font-semibold">{h.name}</span>
+                      <span className="font-bold tabular-nums">{formatCurrency(h.amount)}</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+                      <div className="h-full rounded-full" style={{ width: `${h.pct * 100}%`, background: h.color }} />
+                    </div>
+                  </div>
+                  <span className="muted w-12 shrink-0 text-right text-xs font-semibold tabular-nums">{formatPercent(h.pct)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </SectionCard>
       </div>
 

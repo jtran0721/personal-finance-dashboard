@@ -189,17 +189,23 @@ export const useStore = create<StoreState>()(
     }),
     {
       name: 'fintrack-store',
-      version: 4,
-      // Bumping the version re-applies the seed categories (latest budget plan) onto
-      // existing saved data, and re-points transactions in removed categories
-      // (retirement → brokerage) so none are left orphaned.
+      version: 5,
+      // Non-destructive migration: KEEP the user's categories (renames, budgets,
+      // custom adds like "Education") and only APPEND any built-in categories they
+      // don't already have — e.g. new savings buckets. Also re-points transactions
+      // in the removed "retirement" category to brokerage so none are orphaned.
       migrate: (persisted) => {
         const prev = (persisted ?? {}) as Record<string, unknown>;
         const txns = Array.isArray(prev.transactions) ? (prev.transactions as Transaction[]) : [];
         const transactions = txns.map((t) =>
           t.categoryId === 'retirement' ? { ...t, categoryId: 'brokerage' } : t,
         );
-        return { ...prev, categories: DEFAULT_CATEGORIES, transactions } as unknown as StoreState;
+        const existing = Array.isArray(prev.categories) ? (prev.categories as Category[]) : [];
+        const ids = new Set(existing.map((c) => c.id));
+        const categories = existing.length
+          ? [...existing, ...DEFAULT_CATEGORIES.filter((c) => !ids.has(c.id))]
+          : DEFAULT_CATEGORIES;
+        return { ...prev, categories, transactions } as unknown as StoreState;
       },
       partialize: (s) => ({
         transactions: s.transactions,

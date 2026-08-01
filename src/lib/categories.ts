@@ -36,6 +36,9 @@ export const DEFAULT_CATEGORIES: Category[] = [
 
   // ── Transfers (neutral) ───────────────────────────────────
   { id: 'savings', name: 'Savings Transfer', type: 'transfer', color: '#12b886', icon: 'piggy-bank' },
+  { id: 'savings-travel', name: 'Travel Savings', type: 'transfer', color: '#fab005', icon: 'plane' },
+  { id: 'savings-property', name: 'Investment Property Fund', type: 'transfer', color: '#4dabf7', icon: 'home' },
+  { id: 'savings-buffer', name: 'Big Purchase Buffer', type: 'transfer', color: '#f06595', icon: 'shopping-bag' },
   { id: 'transfer', name: 'Transfer', type: 'transfer', color: '#868e96', icon: 'arrow-left-right' },
 ];
 
