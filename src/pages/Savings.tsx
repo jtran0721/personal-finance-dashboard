@@ -51,6 +51,25 @@ export function Savings() {
   const totalInvested = invest.reduce((s, c) => s + c.amount, 0);
   const totalSaved = savings.reduce((s, c) => s + c.amount, 0);
 
+  // Clean, evenly-spaced Y-axis for the savings-rate chart. Recharts' auto ticks
+  // produce odd values (e.g. 0/3/5/8%) when there's little data. Pin a domain and
+  // "nice" round ticks (1/2/5 × 10ⁿ) that also cover negative rates (overspending)
+  // and cap the tick count so the axis stays readable for any range.
+  const rateAxis = useMemo(() => {
+    const rates = series.map((m) => (Number.isFinite(m.rate) ? m.rate : 0));
+    const lo = Math.min(0, ...rates);
+    const hi = Math.max(0.05, ...rates);
+    const rawStep = (hi - lo) / 5 || 0.05;
+    const mag = 10 ** Math.floor(Math.log10(rawStep));
+    const norm = rawStep / mag;
+    const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+    const start = Math.floor(lo / step) * step;
+    const end = Math.ceil(hi / step) * step;
+    const ticks: number[] = [];
+    for (let v = start; v <= end + step / 2; v += step) ticks.push(Number(v.toFixed(4)));
+    return { domain: [start, end] as [number, number], ticks };
+  }, [series]);
+
   if (filtered.length === 0) {
     return <EmptyState icon={PiggyBank} title="Nothing to show yet" description="Once you have transactions in this period, your savings and investment trends appear here." />;
   }
@@ -90,7 +109,7 @@ export function Savings() {
               <BarChart data={series} margin={{ top: 10, right: 8, bottom: 0, left: -16 }}>
                 <CartesianGrid strokeDasharray="4 4" stroke="currentColor" className="text-black/5 dark:text-white/5" vertical={false} />
                 <XAxis dataKey="label" tickLine={false} axisLine={false} dy={6} />
-                <YAxis tickFormatter={(v) => formatPercent(Number(v))} tickLine={false} axisLine={false} width={44} />
+                <YAxis domain={rateAxis.domain} ticks={rateAxis.ticks} tickFormatter={(v) => formatPercent(Number(v))} tickLine={false} axisLine={false} width={44} />
                 <Tooltip content={<RateTooltip />} cursor={{ fill: '#7c3aed', fillOpacity: 0.06 }} />
                 <Bar dataKey="rate" name="Savings rate" fill="#20c997" radius={[6, 6, 0, 0]} maxBarSize={30} />
               </BarChart>
