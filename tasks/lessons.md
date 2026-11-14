@@ -47,6 +47,20 @@ framework/browser/bundler imports, so it can be tested directly. Do this up fron
 
 ---
 
+## L4 — Verify the current branch right before committing; never trust the session-start snapshot
+**Pattern (2026-11-14):** The session-start git snapshot said `feat/bank-api-call`, but after several
+app restarts the checkout was actually `main`. I committed without checking, so both commits landed on
+local `main`, and the push of `feat/bank-api-call` pushed an empty branch. Caught from the terminal
+prompt (`main ⇡2`) — nothing reached remote `main`; fixed by fast-forwarding the feature branch to the
+commits and resetting local `main` to its remote.
+
+**Rule:** Immediately before any commit or push, run `git branch --show-current` and `git branch -vv`
+(branch + upstream). Treat any snapshot or recalled branch name as stale. If a branch's upstream doesn't
+match its name (e.g. a feature branch tracking `main`), push explicitly with
+`git push -u <remote> <branch>` — never a bare `git push`.
+
+---
+
 ## Open tension to resolve with the user
 - **CLAUDE.md §2 ("use subagents liberally")** conflicts with my harness instruction
   ("do not spawn agents unless the user asks"). This session used none. Need the user's preference on
