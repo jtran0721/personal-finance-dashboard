@@ -13,6 +13,8 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    // `npm run server` serves the data API in dev; nginx does this in Docker.
+    proxy: { '/api': 'http://localhost:3001' },
   },
   build: {
     rollupOptions: {

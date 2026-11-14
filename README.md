@@ -1,13 +1,15 @@
 # FinTrack — Personal Finance Tracker Dashboard
 
-A polished, **100% client-side** personal finance dashboard. Import your bank statements as PDFs and
-track income, expenses, investments, saving patterns and budgets — all parsed and stored entirely in
-your browser. No account, no backend, nothing leaves your device.
+A polished, self-hosted personal finance dashboard. Import your bank statements as PDFs and
+track income, expenses, investments, saving patterns and budgets. Statements are parsed in your
+browser; your data is saved to a small SQLite database on your own server (e.g. a Raspberry Pi).
 
 Built with **React 18 + TypeScript + Vite**, Tailwind CSS, Recharts, Zustand and pdf.js.
 
-> **Privacy:** statements are parsed in-browser with pdf.js and data persists only in `localStorage`.
-> Clearing your browser data clears the app. There is no server.
+> **Privacy:** statements are parsed in-browser with pdf.js; nothing is sent anywhere except your own
+> FinTrack server. Transactions, categories and budgets live in its SQLite database, so clearing your
+> browser data doesn't lose anything. Theme and date range are remembered per device (`localStorage`).
+> The API has no login — keep it on your home network and don't port-forward it to the internet.
 
 ## Features
 
@@ -32,7 +34,8 @@ Built with **React 18 + TypeScript + Vite**, Tailwind CSS, Recharts, Zustand and
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
+npm run server       # data API on :3001 (SQLite file in ./data)
+npm run dev          # http://localhost:5173 (proxies /api to the server)
 ```
 
 ### Scripts
@@ -40,38 +43,47 @@ npm run dev          # http://localhost:5173
 | Script              | Purpose                                                                           |
 | ------------------- | --------------------------------------------------------------------------------- |
 | `npm run dev`       | Start the Vite dev server                                                         |
+| `npm run server`    | Start the data API (`server/index.ts`, SQLite in `./data`)                        |
 | `npm run build`     | Type-check and build for production (`dist/`)                                     |
 | `npm run preview`   | Preview the production build                                                      |
-| `npm run typecheck` | `tsc --noEmit`                                                                    |
+| `npm run typecheck` | Type-check the app and the server                                                 |
 | `npm run lint`      | ESLint (zero warnings allowed)                                                    |
-| `npm test`          | End-to-end import smoke test: builds a PDF, extracts with pdf.js, runs the parser |
+| `npm test`          | PDF import, sample data, API server and storage tests                             |
 
 ## Self-hosting with Docker
 
-The app is fully static, so it ships as a tiny nginx image (~64 MB) that builds
-itself — you don't need Node installed on the host.
+Two containers, both built from this repo — you don't need Node installed on the host
+(works on a Raspberry Pi, 64-bit OS):
 
-**Docker Compose (recommended):**
+- `fintrack` — nginx serving the static app and proxying `/api/` to the API
+- `api` — the data server (Node + built-in SQLite), database in the `fintrack-data` volume
 
 ```bash
-docker compose up -d --build     # → http://localhost:8080
+docker compose up -d --build     # → http://localhost:8080 (or http://<pi-address>:8080)
 ```
 
 Change the host port by editing the `8080:80` mapping in `docker-compose.yml`;
-stop with `docker compose down`.
+stop with `docker compose down`. Rebuilding or restarting keeps your data — only
+`docker compose down -v` deletes the volume.
 
-**Plain Docker:**
+nginx is configured for client-side-routing fallback (deep links like `/budget` work on
+refresh) and serves pdf.js's `.mjs` worker with a valid JS MIME type. If the API is down,
+the app shows a "can't reach the server" screen instead of loading (so it can't overwrite
+your data with sample data).
+
+### Backup and restore
+
+The whole database is one file. Run these from the project directory:
 
 ```bash
-docker build -t fintrack .
-docker run -d -p 8080:80 --restart unless-stopped --name fintrack fintrack
-```
+# Backup (do it while nobody is editing)
+docker compose cp api:/data/fintrack.db ./fintrack-$(date +%F).db
 
-The image is a multi-stage build (Node compiles the site, nginx serves it). nginx
-is configured for client-side-routing fallback (deep links like `/budget` work on
-refresh) and serves pdf.js's `.mjs` worker with a valid JS MIME type. The
-container is **stateless** — all data still lives in each browser's `localStorage`,
-nothing is stored server-side.
+# Restore
+docker compose cp ./fintrack-2026-11-14.db api:/data/fintrack.db
+docker compose exec -u root api chown node:node /data/fintrack.db   # copied files are owned by your user; the API needs to write it
+docker compose restart api
+```
 
 > Hosting under a sub-path (e.g. `/fintrack/`) rather than the server root? Set
 > `base: '/fintrack/'` in `vite.config.ts` and rebuild.
@@ -106,14 +118,16 @@ src/
     sampleData.ts     ~6 months of realistic demo transactions
     categories.ts     Seed categories (colors, icons, default budgets)
     format.ts         Currency / percent / date formatters
-  store/useStore.ts   Zustand store + localStorage persistence + seeding
+    storage.ts        Persist storage: data → server API, theme/date range → localStorage
+  store/useStore.ts   Zustand store + persistence + seeding
   hooks/              useFiltered (date-range selector), useImport (modal control)
   components/         layout · ui · charts · transactions · dashboard · import
   pages/              Overview · Transactions · Spending · Budget · Savings
-scripts/test-import.ts End-to-end import test
+server/index.ts       Data API: GET/PUT /api/state backed by SQLite (node:sqlite)
+scripts/              Tests (import, sample data, server, storage)
 ```
 
 ## Tech stack
 
 React 18 · TypeScript · Vite · Tailwind CSS · Recharts · Zustand · pdf.js (`pdfjs-dist`) ·
-framer-motion · date-fns · lucide-react.
+framer-motion · date-fns · lucide-react · Node (`node:http` + `node:sqlite`) · nginx.

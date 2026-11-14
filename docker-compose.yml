@@ -8,4 +8,20 @@ services:
     container_name: fintrack
     ports:
       - "8080:80"
+    depends_on:
+      - api
     restart: unless-stopped
+
+  # Data API — not exposed on the host; nginx proxies /api/ to it.
+  api:
+    build:
+      context: .
+      target: api
+    image: fintrack-api:latest
+    container_name: fintrack-api
+    volumes:
+      - fintrack-data:/data # SQLite database lives here and survives rebuilds
+    restart: unless-stopped
+
+volumes:
+  fintrack-data:

@@ -4,6 +4,16 @@ import { format, startOfMonth, startOfYear, subMonths } from 'date-fns';
 import type { Category, DateRange, DateRangePreset, ThemeMode, Transaction, TxType } from '@/types';
 import { DEFAULT_CATEGORIES, FALLBACK_CATEGORY } from '@/lib/categories';
 import { generateSampleTransactions } from '@/lib/sampleData';
+import { createServerStorage } from '@/lib/storage';
+
+/** Notified when a save to the server fails (the app shell shows a toast). */
+export const saveErrorListeners = new Set<(err: unknown) => void>();
+
+/** Settles once data has loaded from the server; rejects if it couldn't be reached. */
+let settleHydration: (err?: unknown) => void = () => {};
+export const hydration = new Promise<void>((resolve, reject) => {
+  settleHydration = (err) => (err ? reject(err) : resolve());
+});
 
 const isoOf = (d: Date) => format(d, 'yyyy-MM-dd');
 
@@ -179,6 +189,10 @@ export const useStore = create<StoreState>()(
     {
       name: 'fintrack-store',
       version: 5,
+      storage: createServerStorage({
+        onSaveError: (err) => saveErrorListeners.forEach((notify) => notify(err)),
+      }),
+      onRehydrateStorage: () => (_state, error) => settleHydration(error),
       // Non-destructive migration: KEEP the user's categories (renames, budgets,
       // custom adds like "Education") and only APPEND any built-in categories they
       // don't already have — e.g. new savings buckets. Also re-points transactions
