@@ -88,8 +88,8 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
       account: 'Imported',
       source: 'pdf',
     }));
-    const { added, skipped } = addTransactions(txns);
-    toast(`Imported ${added} transaction${added === 1 ? '' : 's'}${skipped ? ` · ${skipped} duplicate${skipped === 1 ? '' : 's'} skipped` : ''}`, 'success');
+    const { added } = addTransactions(txns);
+    toast(`Imported ${added} transaction${added === 1 ? '' : 's'}`, 'success');
     close();
   };
 
@@ -101,7 +101,7 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
     }
     const cat = categories.find((c) => c.id === manual.categoryId);
     const type = cat?.type ?? 'expense';
-    const { added } = addTransactions([
+    addTransactions([
       {
         id: genId(),
         date: manual.date,
@@ -113,7 +113,7 @@ export function ImportModal({ open, onClose }: { open: boolean; onClose: () => v
         source: 'manual',
       },
     ]);
-    toast(added ? 'Transaction added' : 'Looks like a duplicate — skipped', added ? 'success' : 'info');
+    toast('Transaction added', 'success');
     setManual((m) => ({ ...m, description: '', amount: '' }));
   };
 

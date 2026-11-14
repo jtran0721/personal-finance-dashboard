@@ -54,6 +54,11 @@ export function spendingByCategory(txns: Transaction[], byId: Record<string, Cat
   return aggregateByCategory(txns.filter((t) => t.type === 'expense'), byId);
 }
 
+/** Aggregate income by category, sorted high → low, with % of total. */
+export function incomeByCategory(txns: Transaction[], byId: Record<string, Category>): CategorySlice[] {
+  return aggregateByCategory(txns.filter((t) => t.type === 'income'), byId);
+}
+
 /** Aggregate investment contributions by category. */
 export function investmentAllocation(txns: Transaction[], byId: Record<string, Category>): CategorySlice[] {
   return aggregateByCategory(txns.filter((t) => t.type === 'investment'), byId);
