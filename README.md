@@ -21,7 +21,7 @@ Built with **React 18 + TypeScript + Vite**, Tailwind CSS, Recharts, Zustand and
   **50 / 30 / 20** needs/wants/savings allocation vs. targets.
 - **Savings & Investments** — savings-rate trend, cumulative savings curve, and investment allocation.
 - **PDF import** — drag-and-drop a statement; transactions are auto-detected and categorized, then you
-  **review and correct every row** before importing (duplicates are skipped on merge).
+  **review and correct every row** before importing.
 - Bold, colorful UI with a **light/dark toggle**, smooth animations, and a responsive mobile layout.
 - **Seeded sample data** on first run so every chart is alive immediately — clear it anytime from the
   top-right menu.
@@ -106,7 +106,7 @@ src/
     sampleData.ts     ~6 months of realistic demo transactions
     categories.ts     Seed categories (colors, icons, default budgets)
     format.ts         Currency / percent / date formatters
-  store/useStore.ts   Zustand store + localStorage persistence + dedupe + seeding
+  store/useStore.ts   Zustand store + localStorage persistence + seeding
   hooks/              useFiltered (date-range selector), useImport (modal control)
   components/         layout · ui · charts · transactions · dashboard · import
   pages/              Overview · Transactions · Spending · Budget · Savings

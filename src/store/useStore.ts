@@ -35,9 +35,6 @@ function signForType(type: TxType, amount: number): number {
   return type === 'income' ? mag : -mag;
 }
 
-const dedupeKey = (t: Pick<Transaction, 'date' | 'amount' | 'description'>) =>
-  `${t.date}|${t.amount.toFixed(2)}|${t.description.toLowerCase().replace(/\s+/g, ' ').trim()}`;
-
 interface StoreState {
   transactions: Transaction[];
   categories: Category[];
@@ -47,8 +44,8 @@ interface StoreState {
   seeded: boolean;
 
   // ── Transactions ──
-  /** Merge new transactions, skipping duplicates. Returns counts. */
-  addTransactions: (txns: Transaction[]) => { added: number; skipped: number };
+  /** Append new transactions. Returns how many were added. */
+  addTransactions: (txns: Transaction[]) => { added: number };
   updateTransaction: (id: string, patch: Partial<Transaction>) => void;
   setTransactionCategory: (id: string, categoryId: string) => void;
   recategorize: (ids: string[], categoryId: string) => void;
@@ -83,21 +80,13 @@ export const useStore = create<StoreState>()(
       seeded: false,
 
       addTransactions: (txns) => {
-        const existing = new Set(get().transactions.map(dedupeKey));
-        const fresh: Transaction[] = [];
-        for (const t of txns) {
-          const key = dedupeKey(t);
-          if (existing.has(key)) continue;
-          existing.add(key);
-          fresh.push(t);
-        }
-        if (fresh.length > 0) {
+        if (txns.length > 0) {
           set((s) => ({
-            transactions: [...fresh, ...s.transactions].sort((a, b) => (a.date < b.date ? 1 : -1)),
+            transactions: [...txns, ...s.transactions].sort((a, b) => (a.date < b.date ? 1 : -1)),
             seeded: true,
           }));
         }
-        return { added: fresh.length, skipped: txns.length - fresh.length };
+        return { added: txns.length };
       },
 
       updateTransaction: (id, patch) =>
