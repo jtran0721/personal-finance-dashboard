@@ -104,3 +104,60 @@ each is a migration, not a bump.
   React Router 7 and typescript-eslint 8 the most worthwhile of the deferred majors.
 - **Note:** npm skipped install scripts for esbuild/fsevents (not in `allowScripts`); tooling works
   regardless (tests + build pass). Approving them is the user's call.
+
+---
+
+# Server-side storage — SQLite on the Pi (2026-11-14)
+
+Goal: data survives browser resets. Decisions (user): **snapshot in SQLite**, **start fresh** (no
+import of current browser data), **theme + date range stay per-device** in localStorage.
+
+Branch: `feat/sqlite-storage` off latest remote `main`.
+
+## Design
+- `server/index.ts` — zero-dependency Node API using built-in `node:sqlite` (no native build on ARM).
+  `GET /api/state` → stored snapshot (or 404 if empty); `PUT /api/state` → upsert. One table, one row.
+  DB file at `$DATA_DIR/fintrack.db`, kept in a Docker volume.
+- Store keeps `zustand/persist`, but with a custom storage adapter (new `src/lib/storage.ts`):
+  - `transactions`, `categories`, `seeded` (+ persist version) → server
+  - `theme`, `dateRange` → localStorage under a new key `fintrack-prefs`
+  - Old `fintrack-store` key is left untouched (not read, not deleted) as a manual safety net.
+  - Split/merge logic is pure → unit-tested (lesson L3).
+- **Data-loss guard:** storage is now async. The app waits for hydration before `ensureSeeded()` /
+  rendering; if the server can't be reached it shows an error screen instead of seeding sample
+  data and overwriting the DB.
+- Deploy: `docker-compose.yml` gains an `api` service (node:22-alpine) + named volume
+  `fintrack-data`; nginx proxies `/api/` → `api:3001` and raises `client_max_body_size`.
+- Dev: Vite proxies `/api` → `localhost:3001`; new `npm run server` script.
+
+## Steps
+- [x] 1. Server + tests (empty GET, PUT/GET round-trip, bad JSON rejected) → verify: `npm test`
+- [x] 2. Storage adapter + split/merge tests → verify: `npm test`
+- [x] 3. Wire adapter into store; hydration gate + server-down screen in `App.tsx` → verify: typecheck + lint
+- [x] 4. Vite dev proxy + `npm run server` → verify: run app in browser, edit data, clear site data, reload — data still there
+- [x] 5. Dockerfile/compose/nginx → verify: `docker compose up --build`, same browser-reset test, `docker compose down && up` keeps data
+- [x] 6. README: Pi deploy + backup/restore of the DB
+- [ ] 7. Commit (`feat:`), push, PR
+
+## Known tradeoffs
+- Whole snapshot rewritten on each change — fine at personal scale (thousands of txns ≈ <1 MB).
+- Two devices editing at the same time: last write wins.
+- No auth on the API — same as today's app, fine on a home LAN; don't port-forward it to the internet.
+- First load against an empty DB seeds sample data (existing behaviour); "Clear all data" removes it.
+
+## Review
+
+- **Built:** `server/index.ts` (zero-dep Node + `node:sqlite`, one-row snapshot table), `src/lib/storage.ts`
+  (persist adapter: data → API, theme/dateRange → `fintrack-prefs`), hydration gate + "can't reach server"
+  screen + save-failure toast in `App.tsx`, `api` Docker stage/service + `fintrack-data` volume, nginx `/api/`
+  proxy (runtime DNS so nginx starts without the API, 20 MB body limit), Vite dev proxy, README.
+- **Verified:** typecheck (app + server) + lint clean; `npm test` incl. 9 server + 15 storage assertions
+  (data-loss guard: no writes before a successful load). Ran the real store against the dev servers and
+  the Docker stack: seed + edit saved → reload with wiped localStorage keeps all 226 txns → API
+  unreachable leaves the DB untouched. Data survived `docker compose down`/`up`; nginx returns 502
+  while the API is stopped and recovers on restart; 2.6 MB save through nginx OK.
+- **Found while testing:** restoring a backup with `docker compose cp` leaves the DB owned by the host
+  uid → saves fail (500). README restore steps include the `chown`; verified saves work after it.
+- **Not verified:** clicking through the UI in a real browser (Chrome extension wasn't connected) —
+  the loading/error screens and toast are type-checked but not seen rendered.
+- **Unrelated, left alone:** `package.json` description still says "all in your browser".

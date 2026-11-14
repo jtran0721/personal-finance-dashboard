@@ -37,6 +37,9 @@ pnpm-debug.log*
 # Test / coverage
 coverage
 
+# Local SQLite database (`npm run server`)
+/data
+
 # Local user financial data exports (just in case)
 *.statement.pdf
 /sample-statements

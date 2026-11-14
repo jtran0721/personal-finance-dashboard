@@ -6,11 +6,12 @@
   "description": "Personal Finance Tracker Dashboard — track income, investments & expenses from your bank statements, all in your browser.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit",
+    "build": "npm run typecheck && vite build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.server.json",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test": "tsx scripts/test-import.ts && tsx scripts/test-sampledata.ts"
+    "test": "tsx scripts/test-import.ts && tsx scripts/test-sampledata.ts && tsx scripts/test-server.ts && tsx scripts/test-storage.ts",
+    "server": "node server/index.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -25,6 +26,7 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@types/node": "^22.20.5",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",

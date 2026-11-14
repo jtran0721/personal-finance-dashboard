@@ -12,6 +12,24 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
+# ── API stage: data server (SQLite), built with `target: api` in docker-compose ──
+FROM node:22-alpine AS api
+WORKDIR /app
+
+# Zero-dependency server: Node runs the TypeScript directly, no npm install needed.
+COPY package.json ./
+COPY server ./server
+
+ENV NODE_ENV=production PORT=3001 DATA_DIR=/data
+RUN mkdir -p /data && chown node:node /data
+USER node
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
+  CMD wget -q -O /dev/null http://localhost:3001/api/health || exit 1
+
+CMD ["node", "server/index.ts"]
+
 # ── Serve stage: tiny nginx image serving the static bundle ──
 FROM nginx:alpine AS serve
 
