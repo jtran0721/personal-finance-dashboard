@@ -76,3 +76,31 @@ with manual-add fallback); PDF layouts vary so the review step is essential; no 
 
 **Stretch ideas (not built):** CSV import, OCR for scanned PDFs, IndexedDB for very large datasets,
 optional encrypted cloud sync, custom category management UI.
+
+---
+
+# Dependency refresh — safe in-range updates (2026-11-14)
+
+Branch: `chore/update-deps` (new, off `main` @ 507dbd9). Scope agreed with user: patch/minor only.
+Majors (Tailwind 4, ESLint 10, React 19, Recharts 3, Vite 8, Zustand 5, pdfjs 6, TS 7…) deferred —
+each is a migration, not a bump.
+
+- [x] `npm update` (lockfile only; package.json ranges unchanged)
+- [x] `npm outdated` shows Current = Wanted for every package
+- [x] typecheck + lint + `npm test` + `npm run build` clean
+- [x] App runs in the browser: pages route, styles render, no console errors
+- [x] Commit (`chore:`), push `-u` to the new branch
+
+## Review
+
+- **Bumped (in-range):** autoprefixer 10.5.2→10.6.2, postcss 8.5.15→8.5.33, react-router-dom
+  6.30.4→6.30.6, tsx 4.22.4→4.23.15, plus transitive deps. Only `package-lock.json` changed.
+- **Verified:** typecheck + lint clean; `npm test` (import + sample-data) passes; production build OK;
+  all 5 routes navigate in the browser with no console errors.
+- **Security:** `npm audit` 18 (7 high) → 10 (1 high). All 10 remaining need majors and reduce to 3
+  issues: minimatch ReDoS via @typescript-eslint (lint-only); Vite/esbuild dev-server issues
+  (dev-only — Docker serves static files via nginx); React Router open redirect via `\` in
+  `<Link>`/`useNavigate` (ships, but every link targets a fixed internal route). These make Vite,
+  React Router 7 and typescript-eslint 8 the most worthwhile of the deferred majors.
+- **Note:** npm skipped install scripts for esbuild/fsevents (not in `allowScripts`); tooling works
+  regardless (tests + build pass). Approving them is the user's call.
