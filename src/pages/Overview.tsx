@@ -7,6 +7,7 @@ import { useImport } from '@/hooks/useImport';
 import {
   budgetVsActual,
   computeTotals,
+  incomeByCategory,
   monthKeyOf,
   monthlyTrend,
   spendingByCategory,
@@ -40,6 +41,7 @@ export function Overview() {
   const totals = computeTotals(filtered);
   const monthly = monthlyTrend(filtered);
   const spending = spendingByCategory(filtered, byId);
+  const income = incomeByCategory(filtered, byId);
   // Budget preview: use the current month if it has activity, otherwise the most
   // recent month that does — so a freshly imported statement is always reflected.
   const currentMonthKey = format(new Date(), 'yyyy-MM');
@@ -111,6 +113,53 @@ export function Overview() {
           <div className="mt-3">
             <CategoryLegend data={spending} limit={5} />
           </div>
+        </SectionCard>
+      </div>
+
+      {/* Income by category */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <SectionCard title="Income by Category">
+          {income.length === 0 ? (
+            <p className="muted py-6 text-center text-sm">No income in this period.</p>
+          ) : (
+            <div className="mx-auto h-44 max-w-[240px]">
+              <CategoryDonut
+                data={income}
+                center={
+                  <>
+                    <span className="muted text-xs font-semibold uppercase">Income</span>
+                    <span className="font-display text-xl font-extrabold">{formatCurrency(totals.income, { compact: true })}</span>
+                  </>
+                }
+              />
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard title="Income Sources" className="lg:col-span-2">
+          {income.length === 0 ? (
+            <p className="muted py-6 text-center text-sm">Once you have income transactions in this period, each source appears here.</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {income.map((h) => (
+                <li key={h.categoryId} className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl" style={{ backgroundColor: `${h.color}22`, color: h.color }}>
+                    <CategoryIcon icon={byId[h.categoryId]?.icon ?? 'wallet'} size={18} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between gap-2 text-sm">
+                      <span className="font-semibold">{h.name}</span>
+                      <span className="font-bold tabular-nums">{formatCurrency(h.amount)}</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-black/5 dark:bg-white/10">
+                      <div className="h-full rounded-full" style={{ width: `${h.pct * 100}%`, background: h.color }} />
+                    </div>
+                  </div>
+                  <span className="muted w-12 shrink-0 text-right text-xs font-semibold tabular-nums">{formatPercent(h.pct)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </SectionCard>
       </div>
 
